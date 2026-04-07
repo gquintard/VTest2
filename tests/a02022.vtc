@@ -20,6 +20,6 @@ server s1 {
 
 } -start
 
-shell { nghttp http://${s1_sock} -nu }
+shell { nghttp http://${s1_sock} -nu --no-rfc7540-pri }
 
 server s1 -wait
