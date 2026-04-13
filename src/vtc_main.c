@@ -888,13 +888,24 @@ automake_test_driver_arguments(int argc, char *const *argv)
 			argv += 2;
 			continue;
 		}
+		if (!strcmp(*argv, "--verbose")) {
+			vtc_verbosity++;
+			argc -= 1;
+			argv += 1;
+                        continue;
+		}
+		if (!strcmp(*argv, "--in-tree")) {
+			iflg++;
+			argc -= 1;
+			argv += 1;
+                        continue;
+		}
 		if (strcmp(*argv, "--")) {
 			fprintf(stderr, "Not '--': '%s'\n", *argv);
 			usage();
 		}
 		if (read_file(argv[1]))
 			usage();
-                printf("Running test %s\n", argv[1]);
 		break;
         }
 	vtc_verbosity = 0;
