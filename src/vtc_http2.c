@@ -1881,6 +1881,20 @@ cmd_txprio(CMD_ARGS)
 		PUT(val, code);					\
 	} while(0)
 
+#define PUT_BOOL(av, vl, name, code)					\
+	do {								\
+		++av;							\
+		if (!strcmp(*av, "false"))				\
+			PUT(0, code);					\
+		else if (!strcmp(*av, "true"))				\
+			PUT(1, code);					\
+		else {							\
+			vtc_fatal(vl, "Push parameter is either "	\
+			    "\"true\" or \"false\", not %s", *av);	\
+		}							\
+	} while(0)
+
+
 /* SECTION: stream.spec.settings_txsettings txsettings
  *
  * SETTINGS frames must be acknowledge, arguments are as follow (most of them
@@ -1932,20 +1946,8 @@ cmd_txsettings(CMD_ARGS)
 
 	PTOK(pthread_mutex_lock(&hp->mtx));
 	while (*++av) {
-		if (!strcmp(*av, "-push")) {
-			++av;
-			vbe16enc(cursor, SETTINGS_ENABLE_PUSH);
-			cursor += sizeof(uint16_t);
-			if (!strcmp(*av, "false"))
-				vbe32enc(cursor, 0);
-			else if (!strcmp(*av, "true"))
-				vbe32enc(cursor, 1);
-			else
-				vtc_fatal(vl, "Push parameter is either "
-				    "\"true\" or \"false\", not %s", *av);
-			cursor += sizeof(uint32_t);
-			f.size += 6;
-		}
+		if (!strcmp(*av, "-push"))
+			PUT_BOOL(av, vl, push, SETTINGS_ENABLE_PUSH);
 		else if (!strcmp(*av, "-hdrtbl")) {
 			PUT_KV(av, vl, hdrtbl, val, SETTINGS_HEADER_TABLE_SIZE);
 			assert(HPK_ResizeTbl(s->hp->decctx, val) != hpk_err);
