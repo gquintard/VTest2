@@ -1866,14 +1866,19 @@ cmd_txprio(CMD_ARGS)
 	write_frame(s, &f, 1);
 }
 
-#define PUT_KV(av, vl, name, val, code) \
-	do {\
-		STRTOU32_CHECK(val, av, p, vl, #name, 0);	\
+#define PUT(val, code)						\
+	do {							\
 		vbe16enc(cursor, code);				\
 		cursor += sizeof(uint16_t);			\
 		vbe32enc(cursor, val);				\
 		cursor += sizeof(uint32_t);			\
 		f.size += 6;					\
+	} while(0)
+
+#define PUT_KV(av, vl, name, val, code) 			\
+	do {							\
+		STRTOU32_CHECK(val, av, p, vl, #name, 0);	\
+		PUT(val, code);					\
 	} while(0)
 
 /* SECTION: stream.spec.settings_txsettings txsettings
