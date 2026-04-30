@@ -901,6 +901,18 @@ do { \
 	return (buf); \
 } while (0)
 
+#define RETURN_SETTING_BOOL(U)					\
+do {								\
+	if (isnan(f->md.settings[SETTINGS_##U])) {		\
+		return (NULL);					\
+	}							\
+	else if (f->md.settings[SETTINGS_##U] == 1)		\
+		snprintf(buf, 20, "true");			\
+	else							\
+		snprintf(buf, 20, "false");			\
+	return (buf);						\
+} while (0)
+
 #define RETURN_BUFFED(val) \
 do { \
 	snprintf(buf, 20, "%ld", (long)val); \
@@ -1034,15 +1046,7 @@ cmd_var_resolve(const struct stream *s, const char *spec, char *buf)
 			snprintf(buf, 20, (f->flags & ACK) ? "true" : "false");
 			return (buf);
 		}
-		if (!strcmp(spec, "push")) {
-			if (isnan(f->md.settings[SETTINGS_ENABLE_PUSH]))
-				return (NULL);
-			else if (f->md.settings[SETTINGS_ENABLE_PUSH] == 1)
-				snprintf(buf, 20, "true");
-			else
-				snprintf(buf, 20, "false");
-			return (buf);
-		}
+		if (!strcmp(spec, "push"))	RETURN_SETTING_BOOL(ENABLE_PUSH);
 		if (!strcmp(spec, "hdrtbl"))     { RETURN_SETTING(HEADER_TABLE_SIZE); }
 		if (!strcmp(spec, "maxstreams")) { RETURN_SETTING(MAX_CONCURRENT_STREAMS); }
 		if (!strcmp(spec, "winsize"))    { RETURN_SETTING(INITIAL_WINDOW_SIZE); }
