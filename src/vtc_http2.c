@@ -892,12 +892,12 @@ do {									\
 		vtc_fatal(s->vl, "Last frame was not of type " #TYPE); \
 	}
 
-#define RETURN_SETTINGS(idx) \
+#define RETURN_SETTING(U) \
 do { \
-	if (isnan(f->md.settings[idx])) { \
+	if (isnan(f->md.settings[SETTINGS_##U])) { \
 		return (NULL); \
 	} \
-	snprintf(buf, 20, "%.0f", f->md.settings[idx]); \
+	snprintf(buf, 20, "%.0f", f->md.settings[SETTINGS_##U]); \
 	return (buf); \
 } while (0)
 
@@ -1043,11 +1043,11 @@ cmd_var_resolve(const struct stream *s, const char *spec, char *buf)
 				snprintf(buf, 20, "false");
 			return (buf);
 		}
-		if (!strcmp(spec, "hdrtbl"))     { RETURN_SETTINGS(1); }
-		if (!strcmp(spec, "maxstreams")) { RETURN_SETTINGS(3); }
-		if (!strcmp(spec, "winsize"))    { RETURN_SETTINGS(4); }
-		if (!strcmp(spec, "framesize"))  { RETURN_SETTINGS(5); }
-		if (!strcmp(spec, "hdrsize"))    { RETURN_SETTINGS(6); }
+		if (!strcmp(spec, "hdrtbl"))     { RETURN_SETTING(HEADER_TABLE_SIZE); }
+		if (!strcmp(spec, "maxstreams")) { RETURN_SETTING(MAX_CONCURRENT_STREAMS); }
+		if (!strcmp(spec, "winsize"))    { RETURN_SETTING(INITIAL_WINDOW_SIZE); }
+		if (!strcmp(spec, "framesize"))  { RETURN_SETTING(MAX_FRAME_SIZE); }
+		if (!strcmp(spec, "hdrsize"))    { RETURN_SETTING(MAX_HEADER_LIST_SIZE); }
 	}
 	/* SECTION: stream.spec.zexpect.push PUSH_PROMISE specific
 	 *
@@ -1925,7 +1925,7 @@ cmd_txsettings(CMD_ARGS)
 	while (*++av) {
 		if (!strcmp(*av, "-push")) {
 			++av;
-			vbe16enc(cursor, 0x2);
+			vbe16enc(cursor, SETTINGS_ENABLE_PUSH);
 			cursor += sizeof(uint16_t);
 			if (!strcmp(*av, "false"))
 				vbe32enc(cursor, 0);
@@ -1938,21 +1938,21 @@ cmd_txsettings(CMD_ARGS)
 			f.size += 6;
 		}
 		else if (!strcmp(*av, "-hdrtbl")) {
-			PUT_KV(av, vl, hdrtbl, val, 0x1);
+			PUT_KV(av, vl, hdrtbl, val, SETTINGS_HEADER_TABLE_SIZE);
 			assert(HPK_ResizeTbl(s->hp->decctx, val) != hpk_err);
 		}
 		else if (!strcmp(*av, "-maxstreams"))
-			PUT_KV(av, vl, maxstreams, val, 0x3);
+			PUT_KV(av, vl, maxstreams, val, SETTINGS_MAX_CONCURRENT_STREAMS);
 		else if (!strcmp(*av, "-winsize"))	{
-			PUT_KV(av, vl, winsize, val, 0x4);
+			PUT_KV(av, vl, winsize, val, SETTINGS_INITIAL_WINDOW_SIZE);
 			VTAILQ_FOREACH(s2, &hp->streams, list)
 				s2->win_self += (val - hp->h2_win_self->init);
 			hp->h2_win_self->init = val;
 		}
 		else if (!strcmp(*av, "-framesize"))
-			PUT_KV(av, vl, framesize, val, 0x5);
+			PUT_KV(av, vl, framesize, val, SETTINGS_MAX_FRAME_SIZE);
 		else if (!strcmp(*av, "-hdrsize"))
-			PUT_KV(av, vl, hdrsize, val, 0x6);
+			PUT_KV(av, vl, hdrsize, val, SETTINGS_MAX_HEADER_LIST_SIZE);
 		else if (!strncmp(*av, "-0x", 3)) {
 			p = *av + 3;
 			errno = 0;
