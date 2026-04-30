@@ -1046,12 +1046,12 @@ cmd_var_resolve(const struct stream *s, const char *spec, char *buf)
 			snprintf(buf, 20, (f->flags & ACK) ? "true" : "false");
 			return (buf);
 		}
+		if (!strcmp(spec, "hdrtbl"))	RETURN_SETTING(HEADER_TABLE_SIZE);
 		if (!strcmp(spec, "push"))	RETURN_SETTING_BOOL(ENABLE_PUSH);
-		if (!strcmp(spec, "hdrtbl"))     { RETURN_SETTING(HEADER_TABLE_SIZE); }
-		if (!strcmp(spec, "maxstreams")) { RETURN_SETTING(MAX_CONCURRENT_STREAMS); }
-		if (!strcmp(spec, "winsize"))    { RETURN_SETTING(INITIAL_WINDOW_SIZE); }
-		if (!strcmp(spec, "framesize"))  { RETURN_SETTING(MAX_FRAME_SIZE); }
-		if (!strcmp(spec, "hdrsize"))    { RETURN_SETTING(MAX_HEADER_LIST_SIZE); }
+		if (!strcmp(spec, "maxstreams"))RETURN_SETTING(MAX_CONCURRENT_STREAMS);
+		if (!strcmp(spec, "winsize"))	RETURN_SETTING(INITIAL_WINDOW_SIZE);
+		if (!strcmp(spec, "framesize"))	RETURN_SETTING(MAX_FRAME_SIZE);
+		if (!strcmp(spec, "hdrsize"))	RETURN_SETTING(MAX_HEADER_LIST_SIZE);
 	}
 	/* SECTION: stream.spec.zexpect.push PUSH_PROMISE specific
 	 *
