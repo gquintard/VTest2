@@ -1038,6 +1038,17 @@ cmd_var_resolve(const struct stream *s, const char *spec, char *buf)
 	 *
 	 * settings.hdrsize
 	 *	Value of MAX_HEADER_LIST_SIZE if set, <undef> otherwise.
+	 *
+	 * settings.connect
+	 *	Value of ENABLE_CONNECT_PROTOCOL "true" if yes, "false if no,
+	 *	<undef> if not present
+	 *
+	 * settings.no_prio
+	 *	Value of NO_RFC7540_PRIORITIES "true" if yes, "false if no,
+	 *	<undef> if not present
+	 *
+	 * settings.tls_reneg
+	 * 	Value of TLS_RENEG_PERMITTED if set, <undef> otherwise.
 	 */
 	if (!strncmp(spec, "settings.", 9)) {
 		CHECK_LAST_FRAME(SETTINGS);
@@ -1052,6 +1063,9 @@ cmd_var_resolve(const struct stream *s, const char *spec, char *buf)
 		if (!strcmp(spec, "winsize"))	RETURN_SETTING(INITIAL_WINDOW_SIZE);
 		if (!strcmp(spec, "framesize"))	RETURN_SETTING(MAX_FRAME_SIZE);
 		if (!strcmp(spec, "hdrsize"))	RETURN_SETTING(MAX_HEADER_LIST_SIZE);
+		if (!strcmp(spec, "connect"))	RETURN_SETTING_BOOL(ENABLE_CONNECT_PROTOCOL);
+		if (!strcmp(spec, "no_prio"))	RETURN_SETTING_BOOL(NO_RFC7540_PRIORITIES);
+		if (!strcmp(spec, "tls_reneg"))	RETURN_SETTING(TLS_RENEG_PERMITTED);
 	}
 	/* SECTION: stream.spec.zexpect.push PUSH_PROMISE specific
 	 *
@@ -1918,6 +1932,15 @@ cmd_txprio(CMD_ARGS)
  * \-hdrsize INT
  *	maximum size of the header list authorized
  *
+ * \-connect BOOL
+ *	whether connect protocol is enabled
+ *
+ * \-no_prio BOOL
+ *	whether priorities are disabled
+ *
+ * \-tls_reneg INT
+ * 	value for TLS_RENEG_PERMITTED
+ *
  * \-0xHH[HH] INT
  *	tx arbitraty settings with tag xx
  *
@@ -1964,6 +1987,12 @@ cmd_txsettings(CMD_ARGS)
 			PUT_KV(av, vl, framesize, val, SETTINGS_MAX_FRAME_SIZE);
 		else if (!strcmp(*av, "-hdrsize"))
 			PUT_KV(av, vl, hdrsize, val, SETTINGS_MAX_HEADER_LIST_SIZE);
+		else if (!strcmp(*av, "-connect"))
+			PUT_BOOL(av, vl, connect, SETTINGS_ENABLE_CONNECT_PROTOCOL);
+		else if (!strcmp(*av, "-no_prio"))
+			PUT_BOOL(av, vl, no_prio, SETTINGS_NO_RFC7540_PRIORITIES);
+		else if (!strcmp(*av, "-tls_reneg"))
+			PUT_KV(av, vl, tls_reneg, val, SETTINGS_TLS_RENEG_PERMITTED);
 		else if (!strncmp(*av, "-0x", 3)) {
 			p = *av + 3;
 			errno = 0;
