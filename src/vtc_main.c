@@ -385,36 +385,41 @@ tst_cb(const struct vev *ve, int what)
 			f = fopen(td_trs_file, "w");
 			AN(f);
 			if (jp->killed || ecode > 1) {
+				printf("FAIL: %s\n", jp->tst->filename);
 				fprintf(f, ":test-result: FAIL\n");
 				fprintf(f, ":copy-in-global-log: yes\n");
 			} else if (ecode) {
+				printf("SKIP: %s\n", jp->tst->filename);
 				fprintf(f, ":test-result: SKIP\n");
 				fprintf(f, ":copy-in-global-log: yes\n");
 			} else {
+				printf("PASS: %s\n", jp->tst->filename);
 				fprintf(f, ":test-result: PASS\n");
 				fprintf(f, ":copy-in-global-log: no\n");
 			}
 			AZ(fclose(f));
-		}
-
-		if (jp->killed)
-			printf("#    top  TEST %s TIMED OUT (kill -9)\n",
-			    jp->tst->filename);
-		if (ecode > 1) {
-			printf("#    top  TEST %s FAILED (%.3f)",
-			    jp->tst->filename, t);
-			if (WIFSIGNALED(stx))
-				printf(" signal=%d\n", WTERMSIG(stx));
-			else if (WIFEXITED(stx))
-				printf(" exit=%d\n", WEXITSTATUS(stx));
-			if (!vtc_continue && td_trs_file == NULL) {
-				/* XXX kill -9 other jobs ? */
-				exit(2);
+		} else {
+			if (jp->killed) {
+				printf(
+				    "#    top  TEST %s TIMED OUT (kill -9)\n",
+				    jp->tst->filename);
 			}
-		} else if (vtc_verbosity) {
-			printf("#    top  TEST %s %s (%.3f)\n",
-			    jp->tst->filename,
-			    ecode ? "skipped" : "passed", t);
+			if (ecode > 1) {
+				printf("#    top  TEST %s FAILED (%.3f)",
+				    jp->tst->filename, t);
+				if (WIFSIGNALED(stx))
+					printf(" signal=%d\n", WTERMSIG(stx));
+				else if (WIFEXITED(stx))
+					printf(" exit=%d\n", WEXITSTATUS(stx));
+				if (!vtc_continue) {
+					/* XXX kill -9 other jobs ? */
+					exit(2);
+				}
+			} else if (vtc_verbosity) {
+				printf("#    top  TEST %s %s (%.3f)\n",
+				    jp->tst->filename,
+				    ecode ? "skipped" : "passed", t);
+			}
 		}
 		if (jp->evt != NULL) {
 			VEV_Stop(vb, jp->evt);
@@ -868,10 +873,10 @@ static void
 automake_test_driver_arguments(int argc, char *const *argv)
 {
 
-        argc -= 1;
-        argv += 1;
+	argc -= 1;
+	argv += 1;
 
-        while (argc > 1) {
+	while (argc > 1) {
 #define TDSAVE(name, dst) \
 		if (!strcmp(*argv, name)) { \
 			dst = argv[1]; \
@@ -892,13 +897,13 @@ automake_test_driver_arguments(int argc, char *const *argv)
 			vtc_verbosity++;
 			argc -= 1;
 			argv += 1;
-                        continue;
+			continue;
 		}
 		if (!strcmp(*argv, "--in-tree")) {
 			iflg++;
 			argc -= 1;
 			argv += 1;
-                        continue;
+			continue;
 		}
 		if (strcmp(*argv, "--")) {
 			fprintf(stderr, "Not '--': '%s'\n", *argv);
@@ -907,7 +912,7 @@ automake_test_driver_arguments(int argc, char *const *argv)
 		if (read_file(argv[1]))
 			usage();
 		break;
-        }
+	}
 	vtc_verbosity = 0;
 }
 
