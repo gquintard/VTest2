@@ -119,6 +119,8 @@ static int cleaner_fd = -1;
 static pid_t cleaner_pid;
 const char *default_listen_addr;
 
+static int has_color = 0;
+
 /**********************************************************************
  * autocrap test-driver command arguments
  */
@@ -303,6 +305,17 @@ cleaner_finish(void)
  * CallBack
  */
 
+// from automake, ^[ == \x1b
+static const char * col_red="\x1b[0;31m";
+static const char * col_grn="\x1b[0;32m";
+static const char * col_blu="\x1b[1;34m";
+static const char * col_std="\x1b[m";
+#ifdef COL_UNUSED
+static const char * col_lgn="\x1b[1;32m";
+static const char * col_mgn="\x1b[0;35m";
+static const char * col_brg="\x1b[1m";
+#endif
+
 static int
 tst_cb(const struct vev *ve, int what)
 {
@@ -385,15 +398,15 @@ tst_cb(const struct vev *ve, int what)
 			f = fopen(td_trs_file, "w");
 			AN(f);
 			if (jp->killed || ecode > 1) {
-				printf("FAIL: %s\n", jp->tst->filename);
+				printf("%sFAIL%s: %s\n", col_red, col_std, jp->tst->filename);
 				fprintf(f, ":test-result: FAIL\n");
 				fprintf(f, ":copy-in-global-log: yes\n");
 			} else if (ecode) {
-				printf("SKIP: %s\n", jp->tst->filename);
+				printf("%sSKIP%s: %s\n", col_blu, col_std, jp->tst->filename);
 				fprintf(f, ":test-result: SKIP\n");
 				fprintf(f, ":copy-in-global-log: yes\n");
 			} else {
-				printf("PASS: %s\n", jp->tst->filename);
+				printf("%sPASS%s: %s\n", col_grn, col_std, jp->tst->filename);
 				fprintf(f, ":test-result: PASS\n");
 				fprintf(f, ":copy-in-global-log: no\n");
 			}
@@ -1067,10 +1080,16 @@ main(int argc, char * const *argv)
 		usual_arguments(argc, argv);
 	}
 
-
 	AZ(VSB_finish(params_vsb));
 
 	vtc_tls_init();
+
+	p = getenv("TERM");
+	has_color = getenv("NO_COLOR") == NULL &&
+	    isatty(fileno(stdout)) &&
+	    p != NULL && strcmp(p, "dumb");
+	if (! has_color)
+		col_red = col_grn = col_blu = col_std = "";
 
 	ip_magic();
 
