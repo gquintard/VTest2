@@ -398,17 +398,23 @@ tst_cb(const struct vev *ve, int what)
 			f = fopen(td_trs_file, "w");
 			AN(f);
 			if (jp->killed || ecode > 1) {
-				printf("%sFAIL%s: %s\n", col_red, col_std, jp->tst->filename);
+				printf("%sFAIL%s: %s\n",
+				    col_red, col_std, jp->tst->filename);
 				fprintf(f, ":test-result: FAIL\n");
 				fprintf(f, ":copy-in-global-log: yes\n");
+				fprintf(f, ":recheck: yes\n");
 			} else if (ecode) {
-				printf("%sSKIP%s: %s\n", col_blu, col_std, jp->tst->filename);
+				printf("%sSKIP%s: %s\n",
+				    col_blu, col_std, jp->tst->filename);
 				fprintf(f, ":test-result: SKIP\n");
 				fprintf(f, ":copy-in-global-log: yes\n");
+				fprintf(f, ":recheck: no\n");
 			} else {
-				printf("%sPASS%s: %s\n", col_grn, col_std, jp->tst->filename);
+				printf("%sPASS%s: %s\n",
+				    col_grn, col_std, jp->tst->filename);
 				fprintf(f, ":test-result: PASS\n");
 				fprintf(f, ":copy-in-global-log: no\n");
+				fprintf(f, ":recheck: no\n");
 			}
 			AZ(fclose(f));
 		} else {
