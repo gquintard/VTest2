@@ -1184,6 +1184,8 @@ cmd_process(CMD_ARGS)
 			continue;
 		}
 		if (!strcmp(*av, "-start")) {
+			// Clear the "screen"
+			teken_input(p->tek, "\r\n\x1b[H\x1b[2J", 9);
 			process_start(p);
 			continue;
 		}
